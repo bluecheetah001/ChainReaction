@@ -1,3 +1,7 @@
+*{
+    font-family:Quicksand;
+}
+
 #centerer {
     margin: 0px auto;
     width: 800px;

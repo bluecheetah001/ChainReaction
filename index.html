@@ -1,32 +1,125 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Chain Raction</title>
+        <title>Chain Reaction</title>
         <link rel="stylesheet" href="style.css">
         <script type="text/javascript" src="src/helper.js"></script>
+        <script type="text/javascript" src="src/screens.js"></script>
         <script type="text/javascript" src="src/objects.js"></script>
         <script type="text/javascript" src="src/resources.js"></script>
+        <script type="text/javascript" src="src/stats.js"></script>
         <script type="text/javascript" src="src/main.js"></script>
         <script>
             (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
             (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
             m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-            })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+            })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
             
             ga('create', 'UA-59152291-1', 'auto');
+            ga('set', 'forceSSL', true);
             ga('send', 'pageview');
         </script>
     </head>
-    <body onload="init();">
-        <div id="centerer">
-            <h1>Chain Reaction</h1>
-            <canvas id="canvas" width="800" height="450"></canvas>
-            <table id="resources"></table>
-        </div>
+    <body onload="init();" onunload="save();">
         <div id="meta">
-            <span id="save" class='button active'>save</span>
-            <span id="reset" class='button active'>reset</span>
-            | <a href="https://github.com/bluecheetah001/ChainReaction">GitHub</a> | Alpha 1 | fps:<span id="fps"></span>
+            <span id="save" class='button active'>Save</span>
+            <span id="reset" class='button active'>Reset</span>
+            | <a href="https://github.com/bluecheetah001/ChainReaction">GitHub</a> | Alpha 2 | fps:<span id="fps"></span>
+        </div>
+        <div id="centering">
+            <h1>Chain Reaction</h1>
+            <div id="above">
+                <div id="tabs">
+                    <span id="reactorTab" class="button active">Reactor</span>
+                    <span id="resourcesTab" class="button active">Resources</span>
+                    <span id="statsTab" class="button active">Statistics</span>
+                </div>
+                <div id="expContainer">
+                    Explosion Points: <span id="exp">0</span>
+                </div>
+            </div>
+            <div id="main">
+                <div id="scroll">
+                    <div id="reactor" class="screen">
+                        <canvas id="canvas" width="800" height="450"></canvas>
+                    </div>
+                    <div id="resources" class="screen">
+                        <table>
+                            <tr id="size">
+                                <td>Larger Explosions: </td>
+                                <td class="res">0</td>
+                                <td class='group'><span class='button'>1</span><span class='button'>max</span></td>
+                                <td>cost: </td>
+                                <td>0</td>
+                            </tr>
+                            <tr id="time">
+                                <td>Longer Explosions: </td>
+                                <td class="res">0</td>
+                                <td class='group'><span class='button'>1</span><span class='button'>max</span></td>
+                                <td>cost: </td>
+                                <td>0</td>
+                            </tr>
+                            <tr id="speed">
+                                <td>Faster Balls: </td>
+                                <td class="res">0</td>
+                                <td class='group'><span class='button'>1</span><span class='button'>max</span></td>
+                                <td>cost: </td>
+                                <td>0</td>
+                            </tr>
+                            <tr id="balls">
+                                <td>Extra Balls: </td>
+                                <td class="res">0</td>
+                                <td class='group'><span class='button'>1</span><span class='button'>max</span></td>
+                                <td>cost: </td>
+                                <td>0</td>
+                            </tr>
+                        </table>
+                        <div>
+                            Current bonus multiplier: <span id="bonus">0</span><br>
+                            <span id="prestige" class="button active">Reset</span> upgrades and board size to gain <span id="bonusup">0</span> bonus.
+                        </div>
+                    </div>
+                <div id="stats" class="screen">
+                    <table>
+                        <tr>
+                            <td>Max Explosion Points: </td>
+                            <td id="expMax">0</td>
+                        </tr>
+                        <tr>
+                            <td>Total Explosion Points: </td>
+                            <td id="expTotal">0</td>
+                        </tr>
+                        <tr>
+                            <td>Explosions: </td>
+                            <td id="explodes">0</td>
+                        </tr>
+                        <tr>
+                            <td>Max Explosion: </td>
+                            <td id="explodesMax">0</td>
+                        </tr>
+                        <tr>
+                            <td>Total Explosions: </td>
+                            <td id="explodesTotal">0</td>
+                        </tr>
+                        <tr>
+                            <td>Max Chain Reaction: </td>
+                            <td id="chainMax">0</td>
+                        </tr>
+                        <tr>
+                            <td>Clicks: </td>
+                            <td id="clicks">0</td>
+                        </tr>
+                        <tr>
+                            <td>Max Clicks: </td>
+                            <td id="clicksMax">0</td>
+                        </tr>
+                        <tr>
+                            <td>Total Clicks: </td>
+                            <td id="clicksTotal">0</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
         </div>
     </body>
 </html>

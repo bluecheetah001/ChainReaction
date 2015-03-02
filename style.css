@@ -1,60 +1,58 @@
-#centerer {
-    margin: 0px auto;
-    width: 800px;
-}
-
-h1 {
-    display: block;
-    text-align: center;
-    margin: -3px auto 5px auto;
-}
-
-#canvas {
-    margin: 0px auto;
-    outline: 1px solid black;
-    cursor: pointer;
-}
-
-tr {
-    height: 24px;
-}
-
-.button {
-    display: inline-block;
-    text-align: center;
+/*BUTTONS*/
+.inactive {
     background: #CCCCCC;
-    padding: 0px 5px;
-    padding-bottom: 2px;
-    border: 1px solid black;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.group {
-    width: 30px;
-    margin: 1px 0px -1px -1px;
-    border-radius: 0px;
-}
-
-.group:first-child {
-    border-bottom-left-radius: 6px;
-    border-top-left-radius: 6px;
-    margin-left: 10px;
-}
-
-.group:last-child {
-    border-bottom-right-radius: 6px;
-    border-top-right-radius: 6px;
-    margin-right: 10px;
 }
 
 .active {
     background: #EEEEEE;
 }
 
-.active:hover {
-    background: #EEEEF7;
+.active:hover, .new:hover, .pressed {
+    background: #EEEEFF;
 }
+
+.new {
+    background: #FFEAEA;
+}
+
+.button {
+    display: inline-block;
+    text-align: center;
+    padding: 0px 5px 1px 5px;
+    border: 1px solid black;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.group>* {
+    width: 30px;
+    margin-left: -1px;
+    border-radius: 0px;
+}
+
+.group>*:first-child {
+    border-radius: 6px 0px 0px 6px;
+}
+
+.group>*:last-child {
+    border-radius: 0px 6px 6px 0px;
+}
+
+#tabs>* {
+    width: 70px;
+    margin: 0px -4px 0px -1px;
+    border-radius: 0px;
+}
+
+#tabs>*:first-child {
+    border-radius: 6px 0px 0px 0px;
+}
+
+#tabs>*:last-child {
+    border-radius: 0px 6px 0px 0px;
+}
+
+/*OVERLAY*/
 
 #meta{
     position: absolute;
@@ -69,4 +67,77 @@ tr {
     display: inline-block;
     text-align: left;
     width:23px;
+}
+
+#centering {
+    display:block;
+    margin: 0px auto;
+    width: 800px;
+}
+
+h1 {
+    display: block;
+    text-align: center;
+    margin: -3px auto 5px auto;
+}
+
+#above {
+    position: relative;
+}
+
+#above>* {
+    display: inline-block;
+}
+
+#expContainer {
+    position: absolute;
+    right: 0px;
+}
+
+#exp {
+    display: inline-block;
+    width: 60px;
+}
+
+#main {
+    position: relative;
+    width: 800px;
+    height: 450px;
+    overflow: hidden;
+    outline: 1px solid black;
+}
+
+#scroll {
+    position: absolute;
+    width: 300%; /*100% for each tab*/
+    transition: left 1s ease-in-out;
+}
+
+.screen {
+    display: inline-block;
+    vertical-align: top;
+    margin-right: -3px;
+    width: 800px;
+    height: 450px;
+    outline: 1px solid black;
+}
+
+/*REACTOR*/
+
+#canvas {
+    cursor: pointer;
+}
+
+/*RESOURCES*/
+
+#resources>* {
+    display:inline-block;
+    vertical-align: top;
+    margin: 10px -4px 0px 10px;
+    width: 390px;
+    height: 440px;
+}
+
+.res {
+    width: 55px;
 }

@@ -1,69 +1,76 @@
-var scheduler, resources, fps, mouse, canvas, ctx, balls, explodes, points;
+var scheduler, screens, fps;
+var reactor, resources, stats;
 
 function init(){
     document.getElementById("save").addEventListener("click", save);
     document.getElementById("reset").addEventListener("click", reset);
+    document.getElementById("prestige").addEventListener("click", prestige);
     
     resources = new Resources();
-    loadResources();
+    addResources();
     
-    canvas = document.getElementById("canvas");
-    ctx = canvas.getContext("2d");
+    stats = new Stats();
+    addStats();
     
-    balls = new Objects(Ball);
-    explodes = new Objects(Explosion);
-    points = new Objects(Point);
+    reactor = new Reactor();
     
-    mouse = new Mouse();
+    screens = new Screens();
+    screens.addScreen("reactor", reactor);
+    screens.addScreen("resources", resources);
+    screens.addScreen("stats", stats);
+    
     fps = new FPS();
     scheduler = new Scheduler();
     scheduler.add(save, 3600);
-    scheduler.add(clearScreen, 60);
     scheduler.add(fps.update.bind(fps), 10);
     
-    requestAnimationFrame(update);
+    load();
+    
+    requestAnimFrame(update);
 };
     
 function update(){
     scheduler.update();
-    
-    balls.update();
-    explodes.update();
-    points.update();
-    
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-    mouse.draw();
-    balls.draw();
-    explodes.draw();
-    points.draw();
-    
-    resources.draw();
-    
-    requestAnimationFrame(this.update.bind(this));
-};
-
-function clearScreen(){
-    if(balls.count == 0){
-        explodes.clear();
-    }
-    if(explodes.count == 0){
-        var max = resources.get('balls')+5;
-        while(balls.count < max){
-            balls.add();
-        }
-    }
+    screens.update();
+    screens.draw();
+    requestAnimFrame(update);
 };
 
 function save(){
+    localStorage.setItem("ver", "Alpha 2");
     resources.save();
+    stats.save();
+};
+
+function load(){
+    var version = localStorage.getItem("ver");
+    if(typeof version === "null"){
+        localStorage.clear();
+    }
+    resources.load();
+    stats.load();
 };
 
 function reset(){
+    if(confirm("This will reset everything including any bonus score.")){
+        ga('send', 'event', 'reset', 'click');
+        stats.reset(true);
+        resources.reset();
+        reactor.reset();
+        localStorage.clear();
+        save();
+    }
+};
+
+function prestige(){
+    var bonus = Math.floor(stats.get("explodes")/100)/100+resources.get("bonus");
+    ga('send', 'event', 'prestige', 'click', 'newBonus', bonus-resources.get("bonus"));
+    ga('send', 'event', 'prestige', 'click', 'bonus', bonus);
+    ga('send', 'event', 'prestige', 'click', 'clicks', stats.get("clicks"));
+    stats.reset(false);
     resources.reset();
-    balls.clear();
-    explodes.clear();
-    points.clear();
-    scheduler.reset();
+    resources.set("bonus", bonus);
+    reactor.reset();
     save();
 };
 
@@ -71,13 +78,7 @@ function Scheduler(){
     this.events = [];
 };
 
-Scheduler.prototype = {
-    reset: function(){
-        for(var i in this.events){
-            this.events[i].time = 0;
-        }
-    },
-    
+Scheduler.prototype = {    
     add: function(func, delay){
         this.events.push({
             func:func,
@@ -89,9 +90,9 @@ Scheduler.prototype = {
     update: function(){
         for(var i in this.events){
             var event = this.events[i];
-            event.time -= 1;
-            if(event.time <= 0){
-                event.time = event.delay;
+            event.time += 1;
+            if(event.time >= event.delay){
+                event.time = 0;
                 event.func();
             }
         }
@@ -109,57 +110,6 @@ FPS.prototype = {
         this.then = now;
         if(isFinite(time)){
             this.elem.innerHTML = Math.round(10/time);
-        }
-    }
-};
-
-function Mouse(){
-    this.onCanvas = false;
-    canvas.addEventListener("mousedown", this.click.bind(this));
-    canvas.addEventListener("mousemove", this.move.bind(this));
-    canvas.addEventListener("mouseout", this.move.bind(this));
-};
-
-Mouse.prototype = {
-    nearest: function(){
-        var minDist = 50;
-        var minBall;
-        for(var i in balls.objects){
-            var ball = balls.objects[i];
-            var dist = distance(this, ball);
-            if(dist < minDist){
-                minDist = dist;
-                minBall = ball;
-            }
-        }
-        return minBall;
-    },
-    
-    click: function(event){
-        this.move(event);
-        var ball = this.nearest();
-        if(typeof ball !== "undefined"){
-            ball.explode();
-        }
-    },
-    
-    move: function(event){
-        var rect = canvas.getBoundingClientRect();
-        this.x = event.clientX - rect.left;
-        this.y = event.clientY - rect.top;
-        this.onCanvas = !(this.x<=0 || this.x>=canvas.width || this.y<=0 || this.y>=canvas.height);
-    },
-    
-    draw: function(){
-        if(this.onCanvas){
-            var ball = this.nearest();
-            if(typeof ball !== "undefined"){
-                ctx.setLineDash([3,5]);
-                ctx.beginPath();
-                ctx.moveTo(Math.round(ball.x), Math.round(ball.y));
-                ctx.lineTo(this.x, this.y);
-                ctx.stroke();
-            }
         }
     }
 };

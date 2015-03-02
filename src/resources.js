@@ -1,90 +1,97 @@
-function loadResources(){
-    resources.addResource("exp", "Explosion Points", 0);
-    resources.addResource("time", "Longer Explosions", 0, 20);
-    resources.addResource("speed", "Faster Balls", 0, 20);
-    resources.addResource("size", "Larger Explosions", 0, 20);
-    resources.addResource("bonus", "Bonus Score", 0, 100);
-    resources.addResource("balls", "Extra Balls", 0, 100);
-    resources.load();
+function addResources(){
+    var bonus = document.getElementById("bonus");
+    resources.addResource("bonus", bonus, 2);
+    
+    var time = document.getElementById("time").children;
+    resources.addResource("time", time[1], 0).cost(time[4], 10, 1.1).button(time[2], [1, 0]);
+    var speed = document.getElementById("speed").children;
+    resources.addResource("speed", speed[1], 0).cost(speed[4], 10, 1.1).button(speed[2], [1, 0]);
+    var size = document.getElementById("size").children;
+    resources.addResource("size", size[1], 0).cost(size[4], 10, 1.1).button(size[2], [1, 0]);
+    var balls = document.getElementById("balls").children;
+    resources.addResource("balls", balls[1], 0).cost(balls[4], 50, 1.1).button(balls[2], [1, 0]);
 };
 
-function Resource(name, value, cost){
-    this.value = value;
-    this.buttons = false;
-    this.elem = document.createElement("tr");
-    this.elem.class = "res";
-    var inner = "<td>"+name+":</td><td> "+value+"</td>";
-    if(typeof cost !== "undefined"){
-        this.buttons = true;
-        this.baseCost = cost;
-        inner += "<td><span class=' group button'>1</span><span class='group button'>max</span></td><td>cost:</td><td> "+this.getCost(1)+"</td>";
-    }
-    this.elem.innerHTML = inner;
-    this.elems = {};
-    this.elems.value = this.elem.children[1];
-    if(this.buttons){
-        this.elems.button1 = this.elem.children[2].children[0];
-        this.elems.buttonMax = this.elem.children[2].children[1];
-        this.elems.cost = this.elem.children[4];
-        this.elems.button1.addEventListener("click", this.buy.bind(this, 1));
-        this.elems.buttonMax.addEventListener("click", this.buy.bind(this, -1));
-    }
-    resources.elem.appendChild(this.elem);
+function Resource(elem, decimal){
+    this.value = 0;
+    this.exponent = decimal;
+    this.decimal = Math.pow(10, decimal);
+    this.valueElem = elem;
 };
 
 Resource.prototype = {
+    cost: function(elem, factor, base){
+        this.getCost = function(num){
+            if(typeof num === "undefined"){
+                num = 1;
+            }
+            return factor*(Math.pow(base,this.get())-Math.pow(base,this.get()+num))/(1-base)
+        }
+        this.getMaxBuy = function(money){
+            return Math.floor(Math.log(Math.pow(base,this.get())-money*(1-base)/factor)/Math.log(base) - this.get());
+        }
+        this.costElem = elem;
+        return this;
+    },
+    
+    button: function(elem, counts){
+        this.buttonElems = elem.children;
+        for(var i in counts){
+            this.buttonElems[i].addEventListener("click", this.buy.bind(this, counts[i]));
+            this.buttonElems[i].className = "button inactive";
+        }
+        return this;
+    },
+    
     set: function(value){
-        this.value = value;
+        this.value = Math.round(value*this.decimal);
     },
     
     add: function(value){
-        this.value += value;
+        this.value += Math.round(value*this.decimal);
     },
     
-    getCost: function(amount){
-        var total = 0;
-        for(var i = 0; i < amount; i++){
-            total += trunc(this.baseCost*Math.pow(1.2, i + this.value));
+    get: function(){
+        return this.value/this.decimal;
+    },
+    
+    hasCost: function(amount){
+        if(amount<=0){
+            amount = 1;
         }
-        return total;
+        return stats.get("exp") >= this.getCost(amount);
     },
     
     buy: function(amount){
-        if(amount > 0){
-            var cost = this.getCost(amount);
-            if(resources.get('exp') >= cost){
-                resources.add('exp', -cost);
-                this.add(amount);
-            }
-        }else{
-            var cost = this.getCost(1);
-            while(cost <= resources.get('exp')){
-                resources.add('exp', -cost);
-                this.add(1);
-                cost = this.getCost(1);
-            }
+        if(amount <=0){
+            var amount = this.getMaxBuy(stats.get("exp"))
+        }
+        var cost = this.getCost(amount)
+        if(stats.get("exp") >= cost){
+            stats.add("exp", -cost);
+            this.add(amount);
         }
     },
     
     draw: function(){
-        this.elems.value.innerHTML = " "+this.value;
-        if(this.buttons){
-            var cost = this.getCost(1);
-            this.elems.cost.innerHTML = " "+cost;
-            if(resources.get('exp') >= cost){
-                this.elems.button1.className = "group button active";
-                this.elems.buttonMax.className = "group button active";
+        this.valueElem.innerHTML = ""+stringify(this.get());
+        if(typeof this.getCost !== "undefined"){
+            var cost = this.getCost();
+            this.costElem.innerHTML = " "+stringify(cost);
+            if(stats.get("exp") >= cost){
+                this.buttonElems[0].className = "button active"
+                this.buttonElems[1].className = "button active"
             }else{
-                this.elems.button1.className = "group button";
-                this.elems.buttonMax.className = "group button";
+                this.buttonElems[0].className = "button inactive"
+                this.buttonElems[1].className = "button inactive"
             }
         }
     }
 };
 
 function Resources(){
-    this.elem = document.getElementById("resources");
     this.resources = {};
+    this.newBonusElem = document.getElementById("bonusup");
 };
 
 Resources.prototype = {
@@ -109,8 +116,9 @@ Resources.prototype = {
         }
     },
     
-    addResource: function(res, name, val, cost){
-        this.resources[res] = new Resource(name, val, cost);
+    addResource: function(res, elem, decimal){
+        this.resources[res] = new Resource(elem, decimal);
+        return this.resources[res];
     },
     
     set: function(res, value){
@@ -122,21 +130,22 @@ Resources.prototype = {
     },
     
     get: function(res){
-        return this.resources[res].value;
+        return this.resources[res].get();
     },
     
-    getAll: function(){
-        var values = {};
-        for(var i in arguments){
-            var res = arguments[i];
-            values[res] = this.get(res);
+    update: function(){
+        for(var key in this.resources){
+            if(typeof this.resources[key].getCost !== "undefined" &&
+                    this.resources[key].getCost()<=stats.get("exp")){
+                screens.hasNew("resources");
+            }
         }
-        return values;
     },
     
     draw: function(){
         for(var key in this.resources){
             this.resources[key].draw();
         }
+        this.newBonusElem.innerHTML = ""+stringify(Math.floor(stats.get("explodes")/100)/100);
     }
 }
